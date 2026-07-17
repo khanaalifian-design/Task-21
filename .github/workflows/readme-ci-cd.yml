@@ -1,0 +1,49 @@
+name: README CI-CD
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  continuous-integration:
+    name: Check README
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Confirm README exists
+        run: test -f README.txt
+
+      - name: Confirm README is not empty
+        run: test -s README.txt
+
+      - name: Display README contents
+        run: cat README.txt
+
+  continuous-delivery:
+    name: Package README
+    needs: continuous-integration
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+
+      - name: Create delivery package
+        run: |
+          mkdir delivery
+          cp README.txt delivery/
+
+      - name: Upload delivery artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: task-21-delivery
+          path: delivery/
